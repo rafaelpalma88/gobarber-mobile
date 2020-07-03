@@ -69,14 +69,17 @@ export const ProviderAvatar = styled.Image`
   height: 32px;
   border-radius: 16px;
 `;
+
 export const ProviderName = styled.Text<ProviderNameProps>`
   margin-left: 8px;
   font-family: 'RobotoSlab-Medium';
   font-size: 16px;
   color: ${(props) => (props.selected ? '#232129' : '#f4ede8')};
 `;
+
 export const Calendar = styled.View`
 `;
+
 export const Title = styled.Text`
   font-family: 'RobotoSlab-Medium';
   color: #f4ede8;
@@ -140,3 +143,4 @@ export const CreateAppointmentButtonText = styled.Text`
   font-size: 18px;
   color: #232129;
 `;
+

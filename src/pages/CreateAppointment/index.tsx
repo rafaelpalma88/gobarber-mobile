@@ -30,6 +30,7 @@ import {
   HourText,
   CreateAppointmentButton,
   CreateAppointmentButtonText,
+  DateTimePickerContainer
 } from './styles'
 import api from '../../services/api'
 
@@ -210,6 +211,7 @@ const CreateAppointment: React.FC = () => {
             onChange={handleDateChanged}
             value={selectedDate}
           />
+
         )}
 
       </Calendar>

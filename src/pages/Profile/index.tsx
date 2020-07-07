@@ -27,15 +27,17 @@ import {
   BackButton
 } from './styles';
 
-interface SignInFormData {
+interface ProfileFormData {
   name: string;
   email: string;
+  old_password: string;
   password: string;
+  password_confirmation: string;
 }
 
 const Profile: React.FC = () => {
 
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   const formRef = useRef<FormHandles>(null);
   const emailInputRef = useRef<TextInput>(null)
@@ -44,25 +46,53 @@ const Profile: React.FC = () => {
   const confirmPasswordInputRef = useRef<TextInput>(null)
   const navigation = useNavigation();
 
-  const handleSignUp = useCallback(async (data: SignInFormData) => {
+  const handleSignUp = useCallback(async (data: ProfileFormData) => {
     try {
       formRef.current?.setErrors({});
 
       const schema = Yup.object().shape({
         name: Yup.string().required('Nome obrigatório'),
         email: Yup.string().required('E-mail obrigatório').email('Digite um e-mail válido'),
-        password: Yup.string().required('Senha obrigatória'),
+        //password: Yup.string().required('Senha obrigatória'),
+        old_password: Yup.string(),
+        password: Yup.string().when('old_password', {
+          is: (val) => !!val.length,
+          then: Yup.string().required('Campo obrigatorio'),
+          otherwise: Yup.string(),
+        }),
+        password_confirmation: Yup.string()
+          .when('old_password', {
+            is: (val) => !!val.length,
+            then: Yup.string().required('Campo obrigatorio'),
+            otherwise: Yup.string(),
+          })
+          .oneOf([Yup.ref('password'), null], 'Passwords must match'),
       });
 
       await schema.validate(data, {
         abortEarly: false,
       });
 
-      await api.post('users', data)
+      const {
+        name, email, old_password, password, password_confirmation,
+      } = data;
+
+      const formData = {
+        name,
+        email,
+        ...(old_password ? {
+          old_password,
+          password,
+          password_confirmation,
+        } : {}),
+      };
+
+      const response = await api.put('profile', formData)
+
+      updateUser(response.data);
 
       Alert.alert(
-        'Cadastro realizado com sucesso',
-        'Voce ja pode fazer login na aplicacao'
+        'Perfil atualizado com sucesso',
       )
 
       navigation.goBack()
@@ -77,8 +107,8 @@ const Profile: React.FC = () => {
       }
 
       Alert.alert(
-        'Erro na autenticacao',
-        'Ocorreu um erro ao fazer login, cheque as credenciais',
+        'Erro na atualizaçao do perfil',
+        'Ocorreu um erro ao atualizar seu perfil, tente novamente',
         []
       )
     }
@@ -112,7 +142,11 @@ const Profile: React.FC = () => {
             <View>
               <Title>Meu perfil</Title>
             </View>
-            <Form ref={formRef} onSubmit={handleSignUp}>
+            <Form
+              ref={formRef}
+              onSubmit={handleSignUp}
+              initialData={user}
+            >
               <Input
                 autoCapitalize="words"
                 name="name"
